@@ -1,11 +1,21 @@
 # gitlab-proxy
 
-Sits between the GitLab API and the Echoes API
+Improve the security guarantees of using [Echoes HQ](https://echoeshq.com)
+together with GitLab by proxying the GitLab API. The proxy serves two main
+purposes:
+
+* Restrict the set of exposed API endpoints to the subset necessary for Echoes
+  HQ to operate.
+* Provide its own authentication mechanism so that you don't have to trust
+  Echoes HQ with your GitLab token.
+
+See [Echoes documentation](https://docs.echoeshq.com/gitlab-api-proxy) for more
+information.
 
 ## API keys
 
-The setting of the API keys is done in the `api_keys.conf` file.
-This file should be mounted dynamically and not baked into the docker image.
+The setting of the API keys is done in the `api_keys.conf` file. This file
+should be mounted dynamically and not baked into the docker image.
 
 ## API routes
 
@@ -36,7 +46,6 @@ docker run \
 
 ```console
 # call the GitLab API via the proxy
-
 curl --location --request GET 'http://0.0.0.0:8080/api/v4/groups/<REPLACE_ME>/members' \
     --header 'Content-Type: application/json' \
     --header 'PRIVATE-TOKEN: <REPLACE_ME>'
