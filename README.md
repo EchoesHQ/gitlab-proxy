@@ -54,3 +54,12 @@ curl --location --request GET 'http://0.0.0.0:8080/api/v4/groups/<REPLACE_ME>/me
 ## API logs
 
 API Access logs are available for auditing in `/var/log/nginx/api_access.log`
+
+## Configuration with upstream
+
+For on-premises `GitLab` instances, an upstream configuration could be necessary.
+
+In order to use an upstream configuration with the proxy:
+
+- modify the `api_backends.conf` file in order to map the gitlab instance IP(s)
+- set the environment variable `GITLAB_URL` as follow: `<protocol><upstream_name>` e,g `http://example`
