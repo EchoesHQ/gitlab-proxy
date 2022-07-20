@@ -1,0 +1,50 @@
+include api_keys.conf;
+
+server {
+    access_log /var/log/nginx/api_access.log main;
+
+    # Run locally
+    listen              80;
+    # listen              443 ssl;
+
+    server_name         0.0.0.0;
+    server_tokens       off;
+    root                /dev/null;
+
+    # server_name gitlab.example.com;
+
+    # TLS config
+    # ssl_certificate      /etc/ssl/certs/gitlab.example.com.crt;
+    # ssl_certificate_key  /etc/ssl/private/gitlab.example.com.key;
+    # ssl_session_cache    shared:SSL:10m;
+    # ssl_session_timeout  5m;
+    # ssl_ciphers          HIGH:!aNULL:!MD5;
+    # ssl_protocols        TLSv1.2 TLSv1.3;
+
+    # Required to resolve gitlab.com
+    resolver 8.8.8.8 8.8.4.4 valid=1h; # use Google DNS and cache results for 1 hour 
+
+    # Add the proxy's version to the HTTP headers
+    add_header X-Echoes-GitLab-Proxy-Version v0.1.0 always;
+
+    # Set the global variables from environment
+    set $GITLAB_API_URL ${GITLAB_URL};
+
+    include gitlab_api.conf; # API definitions
+    include api_json_errors.conf;  # API client-friendly JSON errors
+    default_type application/json; # If no content-type, assume JSON
+
+    # API key validation
+    location = /_validate_apikey {
+        internal;
+
+        if ($http_PRIVATE_TOKEN = "") {
+            return 401; # Unauthorized
+        }
+        if ($gitlab_token = "") {
+            return 403; # Forbidden
+        }
+
+        return 204; # OK (no content)
+    }
+}
