@@ -37,6 +37,15 @@ In order to use an upstream configuration with the proxy:
 
 - modify the `api_backends.conf` file in order to map the gitlab instance IP(s)
 - set the environment variable `GITLAB_URL` as follow: `<protocol><upstream_name>` e,g `http://example`
+- mount the `api_backends.conf` file
+
+```console
+docker run \
+    --env-file .env \
+    -v /tmp/api_keys.conf:/etc/nginx/api_keys.conf:ro \
+    -v /tmp/api_backends.conf:/etc/nginx/api_backends.conf:ro \
+    -p 8080:80 gitlab-proxy
+```
 
 ## Local development
 
