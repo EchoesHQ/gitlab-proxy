@@ -15,11 +15,6 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
-    # If the PR is coming from a fork (pull_request_target), ensure it's opened by "dependabot[bot]".
-    # Otherwise, clone it normally.
-    if: |
-      (github.event_name == 'pull_request_target' && github.actor == 'dependabot[bot]') ||
-      (github.event_name != 'pull_request_target' && github.actor != 'dependabot[bot]')
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -42,9 +37,13 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
-    if: |
-      (github.event_name == 'pull_request_target' && github.actor == 'dependabot[bot]') ||
-      (github.event_name != 'pull_request_target' && github.actor != 'dependabot[bot]')
+
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -54,10 +53,35 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
+        with:
+          driver-opts: network=host
 
-      - name: Docker Build
+      - name: Docker build
         uses: docker/build-push-action@v3
         with:
-          tags: gitlab-proxy
+          push: true
+          tags: localhost:5000/gitlab-proxy:latest
           file: ./nginx-proxy/Dockerfile
           context: ./nginx-proxy
+
+      - name: Inspect docker image
+        run: |
+          docker buildx imagetools inspect localhost:5000/gitlab-proxy:latest
+
+      - name: Prepare Docker Run
+        working-directory: ./nginx-proxy
+        run: |-
+          cp .env.example /tmp/env
+          cp api_keys.conf.example /tmp/api_keys.conf
+
+      - name: Docker Run
+        run: |-
+          docker run \
+            -d \
+            --env-file /tmp/env \
+            -v /tmp/api_keys.conf:/etc/nginx/api_keys/api_keys.conf:ro \
+            -p 8080:80 localhost:5000/gitlab-proxy:latest
+
+      - name: Curl
+        run: |-
+          curl -v http://0.0.0.0:8080
