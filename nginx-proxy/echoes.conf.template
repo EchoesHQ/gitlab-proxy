@@ -1,0 +1,23 @@
+# Add the proxy's version to the HTTP headers
+add_header X-Echoes-GitLab-Proxy-Version v0.1.0 always;
+
+# Set the global variables from environment
+set $GITLAB_API_URL ${GITLAB_URL};
+
+include gitlab_api.conf;       # API definitions
+include api_json_errors.conf;  # API client-friendly JSON errors
+default_type application/json; # If no content-type, assume JSON
+
+# API key validation
+location = /_validate_apikey {
+    internal;
+
+    if ($http_PRIVATE_TOKEN = "") {
+        return 401; # Unauthorized
+    }
+    if ($gitlab_token = "") {
+        return 403; # Forbidden
+    }
+
+    return 204; # OK (no content)
+}

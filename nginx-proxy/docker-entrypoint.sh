@@ -1,9 +1,9 @@
 #!/usr/bin/env sh
 set -eu
 
-envsubst '${GITLAB_URL}' < /etc/nginx/gitlab-proxy.conf.template > /etc/nginx/gitlab-proxy.conf
+envsubst '${GITLAB_URL}' < /etc/nginx/echoes.conf.template > /etc/nginx/echoes.conf
 
 # clean up the template
-rm /etc/nginx/gitlab-proxy.conf.template
+rm /etc/nginx/echoes.conf.template
 
 exec "$@"

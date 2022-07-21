@@ -3,11 +3,9 @@ FROM nginx:1.19
 COPY nginx.conf                            /etc/nginx/nginx.conf
 
 COPY api_backends.conf                     /etc/nginx/api_backends.conf
-
-COPY gitlab-proxy.conf.template            /etc/nginx/gitlab-proxy.conf.template
-
+COPY gitlab-proxy.conf                     /etc/nginx/gitlab-proxy.conf
+COPY echoes.conf.template                  /etc/nginx/echoes.conf.template
 COPY api_json_errors.conf                  /etc/nginx/api_json_errors.conf
-
 COPY gitlab_api.conf                       /etc/nginx/gitlab_api.conf
 
 COPY gitlab-api-routes/groups.conf         /etc/nginx/gitlab_api_groups.conf
