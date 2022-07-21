@@ -1,0 +1,41 @@
+name: default
+
+on:
+  push:
+    branches: [main]
+    tags-ignore:
+      - "*"
+  pull_request:
+    branches: [main]
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    # If the PR is coming from a fork (pull_request_target), ensure it's opened by "dependabot[bot]".
+    # Otherwise, clone it normally.
+    if: |
+      (github.event_name == 'pull_request_target' && github.actor == 'dependabot[bot]') ||
+      (github.event_name != 'pull_request_target' && github.actor != 'dependabot[bot]')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        if: ${{ github.event_name != 'pull_request_target' }}
+
+      - name: Checkout PR
+        if: ${{ github.event_name == 'pull_request_target' }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16.15.0"
+
+      - name: Lint nginx conf files
+        run: |-
+          npm install -g nginx-linter
+          nginx-linter --include "nginx-proxy/**/*.conf"
