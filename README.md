@@ -76,7 +76,7 @@ map $http_PRIVATE_TOKEN $gitlab_token {
 
 ### Step 5: Run the proxy
 
-The proxy expects the file `api_keys.conf` to me mounted to `/etc/nginx/api_keys`.
+The proxy expects the file `api_keys.conf` to be mounted to `/etc/nginx/api_keys`.
 
 The following command runs the proxy on port `8080`:
 
@@ -132,7 +132,7 @@ GITLAB_URL=http://example
 
 ### Step 4: Run the proxy
 
-The proxy expects the file `api_backends.conf` to me mounted to `/etc/nginx/api_backends/api_backends.conf`:
+The proxy expects the file `api_backends.conf` to be mounted to `/etc/nginx/api_backends/api_backends.conf`:
 
 ```console
 docker run \
@@ -145,7 +145,7 @@ docker run \
 ## Restricted access
 
 The proxy is preconfigured to only accept connections from Echoes IP addresses.
-If this turns out to be a problem for your particular deployment, uncomment the
+If this turns out to be a problem for your particular deployment, comment the
 corresponding lines in the `gitlab-proxy.conf` file:
 
 ```txt
