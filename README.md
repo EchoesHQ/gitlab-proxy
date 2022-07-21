@@ -70,7 +70,7 @@ The final content should resemble the following:
 map $http_PRIVATE_TOKEN $gitlab_token {
     default "";
 
-    "oLAVcK2LAzfMpYXT10ymK1qL" "glpat-ZjNEWE6JPQ6YX5YBEfYz";
+    "oLAVcK2LAzfMpYXT10ymK1qL" "glpat-fake-token";
 }
 ```
 
