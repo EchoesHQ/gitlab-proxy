@@ -2,8 +2,10 @@ FROM nginx:1.19
 
 COPY nginx.conf                            /etc/nginx/nginx.conf
 
-RUN mkdir /etc/nginx/backends
+RUN mkdir /etc/nginx/proxy
+COPY ip_restriction.conf                   /etc/nginx/proxy/ip_restriction.conf
 
+RUN mkdir /etc/nginx/backends
 COPY api_backends.conf                     /etc/nginx/api_backends/api_backends.conf
 
 COPY gitlab-proxy.conf                     /etc/nginx/gitlab-proxy.conf

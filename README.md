@@ -145,16 +145,16 @@ docker run \
 ## Restricted access
 
 The proxy is preconfigured to only accept connections from Echoes IP addresses.
-If this turns out to be a problem for your particular deployment, comment the
-corresponding lines in the `gitlab-proxy.conf` file:
 
-```txt
-  # Restricted to Echoes IPs
-  # https://docs.echoeshq.com/echoes-ip-addresses
-  allow 34.91.37.106;
-  allow 34.90.193.154;
-  deny all;
 ```
+# gitlab-proxy.conf
+include proxy/ip_restriction.conf
+```
+
+If this turns out to be a problem for your particular deployment,
+this setting can be overriden by mounting another configuration file.
+
+`-v /tmp/ip_restriction.conf:/etc/nginx/proxy/ip_restriction.conf:ro`
 
 ## K8s deployment example
 
