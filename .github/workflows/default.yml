@@ -39,3 +39,25 @@ jobs:
         run: |-
           npm install -g nginx-linter
           nginx-linter --include "nginx-proxy/**/*.conf"
+
+  docker:
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'pull_request_target' && github.actor == 'dependabot[bot]') ||
+      (github.event_name != 'pull_request_target' && github.actor != 'dependabot[bot]')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Docker Build
+        uses: docker/build-push-action@v3
+        with:
+          tags: gitlab-proxy
+          file: ./nginx-proxy/Dockerfile
+          context: ./nginx-proxy
