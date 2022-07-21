@@ -1,0 +1,18 @@
+version: 2
+updates:
+  - package-ecosystem: "docker"
+    directory: "/nginx-proxy"
+    registries:
+      - dockerhub
+    schedule:
+      interval: "daily"
+    labels:
+      - "dependencies"
+      - "docker"
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: daily
+    labels:
+      - "dependencies"
+      - "github_actions"
