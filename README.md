@@ -22,13 +22,13 @@ git clone git@github.com:EchoesHQ/gitlab-proxy.git
 
 ### Step 2: Build the Docker image
 
-Navigate to the `nginx-proxy` folder.
+Navigate to the `nginx-proxy` folder:
 
 ```console
 $ cd nginx-proxy
 ```
 
-Build the image
+Build the image:
 
 ```console
 $ docker build . -t gitlab-proxy
@@ -36,26 +36,24 @@ $ docker build . -t gitlab-proxy
 
 ### Step 3: Create the environment file
 
-Copy the `.env.example` file
+Copy the `.env.example` file:
 
 ```console
 $ cp .env.example .env
 ```
 
-By default it targets `gitlab.com`.
-
-Set the `GITLAB_URL` variable to the GitLab URL of your choice.
-For instance `GITLAB_URL=https://gitlab.mycompany.com`
+The default configuration targets `gitlab.com`, but can be overriden to the URL
+of your choice using the `GITLAB_URL` variable. For example: `GITLAB_URL=https://gitlab.mycompany.com`.
 
 ### Step 4: Set the API keys
 
-Copy the `api_keys.conf.example` into a mount location on the host, for instance
+Copy the `api_keys.conf.example` into a mount location on the host, for instance:
 
 ```console
 $ cp api_keys.conf.example /tmp/api_keys.conf
 ```
 
-Set the API keys appropriately:
+Set the API keys in `api_keys.conf`:
 
 - Generate an API key to be given to Echoes during the GitLab integration installation
 
@@ -66,7 +64,7 @@ oLAVcK2LAzfMpYXT10ymK1qL
 
 - Generate a GitLab [Personal Token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html#create-a-personal-access-token)
 
-The final content should resemble to the example below:
+The final content should resemble the following:
 
 ```txt
 map $http_PRIVATE_TOKEN $gitlab_token {
@@ -80,7 +78,7 @@ map $http_PRIVATE_TOKEN $gitlab_token {
 
 The proxy expects the file `api_keys.conf` to me mounted to `/etc/nginx/api_keys`.
 
-With the command below the proxy will run on the port `8080`.
+The following command runs the proxy on port `8080`:
 
 ```console
 docker run \
@@ -91,7 +89,7 @@ docker run \
 
 ### Step 6: Call the GitLab API
 
-Set the HTTP Header `PRIVATE-TOKEN` to the APi key set in the `api_keys.conf` file earlier, e,g `oLAVcK2LAzfMpYXT10ymK1qL`
+Set the HTTP Header `PRIVATE-TOKEN` to the APi key set in the `api_keys.conf` file earlier, e,g `oLAVcK2LAzfMpYXT10ymK1qL`:
 
 ```console
 curl --location --request GET 'http://0.0.0.0:8080/api/v4/groups/<REPLACE_ME>/members' \
@@ -99,15 +97,22 @@ curl --location --request GET 'http://0.0.0.0:8080/api/v4/groups/<REPLACE_ME>/me
     --header 'PRIVATE-TOKEN: oLAVcK2LAzfMpYXT10ymK1qL'
 ```
 
+### Step 7: Configure a GitLab integration within Echoes
+
+Follow the [GitLab integration
+documentation](https://docs.echoeshq.com/gitlab#iLeZv) to setup a new
+integration pointing to your self-hosted GitLab API proxy, using the API key
+generated in step 4 as your personal access token.
+
 ## Configuration with an upstream directive (Optional)
 
-For on-premises `GitLab` instances, an upstream configuration could be necessary.
-
-Below are the steps in order to use an upstream configuration with the proxy.
+An upstream configuration may be necessary for on-premises GitLab instances.
+The following steps describe how to use an upstream configuration with the
+proxy.
 
 ### Step 1: Copy the `api_backends.conf` file
 
-Copy the `api_backends.conf` file containing an example of upstream into a mount location on the host.
+Copy the `api_backends.conf` file containing an example of upstream into a mount location on the host:
 
 ```console
 $ cp api_backends.conf /tmp/api_backends.conf
@@ -119,7 +124,7 @@ Modify the copied `api_backends.conf` file in order to map the gitlab instance I
 
 ### Step 3: Set the `GITLAB_URL` environment variable
 
-Set the environment variable `GITLAB_URL` from the `.env` file as follow: `<protocol><upstream_name>` e,g `http://example`
+Set the environment variable `GITLAB_URL` from the `.env` file as follow: `<protocol><upstream_name>` e,g `http://example`:
 
 ```txt
 GITLAB_URL=http://example
@@ -127,7 +132,7 @@ GITLAB_URL=http://example
 
 ### Step 4: Run the proxy
 
-The proxy expects the file `api_backends.conf` to me mounted to `/etc/nginx/api_backends/api_backends.conf`.
+The proxy expects the file `api_backends.conf` to me mounted to `/etc/nginx/api_backends/api_backends.conf`:
 
 ```console
 docker run \
@@ -139,12 +144,13 @@ docker run \
 
 ## Restricted access
 
-It is highly advised to restrict the access to the proxy to only known Echoes IPs.
-To enable this restriction uncomment the related part in the `gitlab-proxy.conf` file.
+It is highly recommended to restrict the access to the proxy to only known
+Echoes IPs. To enable this restriction uncomment the related part in the
+`gitlab-proxy.conf` file.
 
 ```txt
   # Restricted to Echoes IPs
-  # https://docs.echoeshq.com/echoes-network-access
+  # https://docs.echoeshq.com/echoes-ip-addresses
   # allow 34.91.37.106;
   # allow 34.90.193.154;
   # deny all;
@@ -165,6 +171,6 @@ Allowed endpoints and methods are defined in `gitlab-api-routes` folder.
 
 The proxy always adds the `X-Echoes-GitLab-Proxy-Version`.
 
-### API logs
+### Access logs
 
-API Access logs are available for auditing in `/var/log/nginx/api_access.log`
+Access logs are available for auditing in `/var/log/nginx/api_access.log`.
