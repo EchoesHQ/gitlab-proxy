@@ -156,6 +156,54 @@ corresponding lines in the `gitlab-proxy.conf` file:
   deny all;
 ```
 
+## K8s deployment example
+
+An example of k8s deployment is given for information only.
+A more robust deployment should be managed via Helm, allowing the setup of metrics, ingress
+probes and other fine aspects of a production ready deployment.
+
+The image used is local, you may want to use your own published custom image:
+
+```yaml
+image: gitlab-proxy
+imagePullPolicy: Never
+```
+
+### TL;DR
+
+A secret would need to be created:
+
+```console
+$ kubectl create secret generic api-keys-secrets --from-file=api-keys.conf=/tmp/api_keys.conf
+```
+
+Refer to [Step 4](#step-4-set-the-api-keys) for more details.
+
+Then mounted as follow:
+
+```yaml
+volumeMounts:
+  - name: api-keys
+    mountPath: "/etc/nginx/api_keys"
+    readOnly: true
+```
+
+The `GITLAB_URL` environment variable has to be set:
+
+```yaml
+env:
+  - name: GITLAB_URL
+    value: "https://gitlab.com"
+```
+
+Deploy the proxy:
+
+```console
+$ kubectl apply -f deployment.example.yaml
+```
+
+The proxy is reachable on port `8084`.
+
 ## Audit & troubleshooting
 
 ### API keys

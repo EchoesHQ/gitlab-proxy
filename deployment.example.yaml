@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gitlab-proxy-service
+spec:
+  selector:
+    app: gitlab-proxy
+  ports:
+    - protocol: "TCP"
+      port: 8084
+      targetPort: 80
+  type: LoadBalancer
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitlab-proxy
+spec:
+  selector:
+    matchLabels:
+      app: gitlab-proxy
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: gitlab-proxy
+    spec:
+      containers:
+        - name: gitlab-proxy
+          image: gitlab-proxy
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
+          env:
+            - name: GITLAB_URL
+              value: "https://gitlab.com"
+          volumeMounts:
+            - name: api-keys
+              mountPath: "/etc/nginx/api_keys"
+              readOnly: true
+
+      volumes:
+        - name: api-keys
+          secret:
+            secretName: api-keys-secrets
