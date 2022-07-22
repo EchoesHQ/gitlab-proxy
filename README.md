@@ -87,9 +87,9 @@ docker run \
     -p 8080:80 gitlab-proxy
 ```
 
-### Step 6: Call the GitLab API
+### Step 6: Test the setup
 
-Set the HTTP Header `PRIVATE-TOKEN` to the APi key set in the `api_keys.conf` file earlier, e,g `oLAVcK2LAzfMpYXT10ymK1qL`:
+Set the HTTP Header `PRIVATE-TOKEN` to the API key set in the `api_keys.conf` file earlier, e,g `oLAVcK2LAzfMpYXT10ymK1qL`:
 
 ```console
 curl --location --request GET 'http://0.0.0.0:8080/api/v4/groups/<REPLACE_ME>/members' \
