@@ -35,7 +35,7 @@ jobs:
           npm install -g nginx-linter
           nginx-linter --include "nginx-proxy/**/*.conf"
 
-  docker:
+  test-proxy-image:
     runs-on: ubuntu-latest
 
     services:
@@ -68,20 +68,38 @@ jobs:
         run: |
           docker buildx imagetools inspect localhost:5000/gitlab-proxy:latest
 
-      - name: Prepare Docker Run
+      - name: Set up tests
+        id: set_up_tests
         working-directory: ./nginx-proxy
         run: |-
           cp .env.example /tmp/env
-          cp api_keys.conf.example /tmp/api_keys.conf
 
-      - name: Docker Run
+          echo "allow all;" > /tmp/ip_restriction.conf
+
+          private_token=$(openssl rand -base64 18)
+          echo ::set-output name=PRIVATE_TOKEN::${private_token}
+
+          gitlab_token=${{ secrets.GITLAB_TOKEN }}
+
+          {
+            echo '  map $http_PRIVATE_TOKEN $gitlab_token {'
+            echo '  default "";'
+            echo '  "'${private_token}'" "'${gitlab_token}'";'
+            echo '  }'
+          } >> /tmp/api_keys.conf
+
+      - name: Run gitlab-proxy
         run: |-
           docker run \
             -d \
             --env-file /tmp/env \
             -v /tmp/api_keys.conf:/etc/nginx/api_keys/api_keys.conf:ro \
+            -v /tmp/ip_restriction.conf:/etc/nginx/proxy/ip_restriction.conf:ro \
             -p 8080:80 localhost:5000/gitlab-proxy:latest
 
-      - name: Curl
+      - name: Tests
+        env:
+          PRIVATE_TOKEN: ${{ steps.set_up_tests.outputs.PRIVATE_TOKEN }}
         run: |-
-          curl -v http://0.0.0.0:8080
+          bash <(curl -s https://raw.githubusercontent.com/pgrange/bash_unit/master/install.sh)
+          ./bash_unit tests/*
