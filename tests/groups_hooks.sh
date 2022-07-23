@@ -1,21 +1,38 @@
 #!/usr/bin/env bash
 
-# TODO: put this in env var output from the set_up_tests CI job
-groupID=53719108
-hookID=12852818
+# includes
+. ./helpers.sh
 
-test_should_return_all_hooks() {
-    response=$(curl -sS --location --request GET 'http://0.0.0.0:8080/api/v4/groups/'${groupID}'/hooks' \
+# Benefits from a flaw in the Hook GitLab API where non Premium Group can
+# be allowed to CRUD webhooks: https://gitlab.com/gitlab-org/gitlab/-/issues/334968
+setup_suite() {
+    # create a test hook
+    response=$(curl -sS --location -d '{"url":"http://foo.barr.com"}' --request POST "${PROXY_BASE_PATH}/groups/${GROUP_ID}/hooks" \
     --header 'Content-Type: application/json' \
-    --header 'PRIVATE-TOKEN: '${PRIVATE_TOKEN}'')
+    --header 'PRIVATE-TOKEN: '"${PRIVATE_TOKEN}"'')
 
-    assert_equals ${hookID} "$(echo ${response} | jq -r '.[0].id')"
+    hookID=$(echo "${response}" | jq -r '.id')
+    export hookID
 }
 
-test_should_return_hooks_by_id() {
-    response=$(curl -sS --location --request GET 'http://0.0.0.0:8080/api/v4/groups/'${groupID}'/hooks/'${hookID}'' \
-    --header 'Content-Type: application/json' \
-    --header 'PRIVATE-TOKEN: '${PRIVATE_TOKEN}'')
+test_should_return_all_hooks() {
+    # list hooks
+    response=$(doRequest "GET" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/hooks")
 
-    assert_equals "404" "$(echo ${response} | jq -r '.status')"
+    # verify the hook is in the list
+    doHave=$(has "${response}" "id" "${hookID}")
+    assert_equals "${doHave}" true
+}
+
+test_should_disallow_hooks_GETbyID_POSTbyID() {
+    response=$(doRequest "GET" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/hooks/${hookID}")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "POST" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/hooks/${hookID}")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+}
+
+teardown_suite() {
+    # delete the test hook
+    response=$(doRequest "DELETE" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/hooks/${hookID}")
 }

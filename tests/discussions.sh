@@ -1,13 +1,23 @@
 #!/usr/bin/env bash
 
-# TODO: put this in env var output from the set_up_tests CI job
-projectID=36541542
-mrID=13
+# includes
+. ./helpers.sh
+
+mrID=3
+discussionID=5c3abd25f4583bfdbf42d68f66d9097381f00fea
 
 test_should_return_discussions() {
-    response=$(curl -sS --location --request GET 'http://0.0.0.0:8080/api/v4/projects/'${projectID}'/merge_requests/'${mrID}'/discussions' \
-    --header 'Content-Type: application/json' \
-    --header 'PRIVATE-TOKEN: '${PRIVATE_TOKEN}'')
+    response=$(doRequest "GET" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests/${mrID}/discussions")
+    assert_equals "${discussionID}" "$(echo "${response}" | jq -r '.[0].id')"
+}
 
-    assert_equals "a1c36c2f5f1ce4b62a7dd7f6f94f6ccf0deb5ff4" "$(echo ${response} | jq -r '.[0].id')"
+test_should_disallow_discussions_byID_POST_PUT_DELETE() {
+    response=$(doRequest "POST" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests/${mrID}/discussions/${discussionID}")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "PUT" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests/${mrID}/discussions/${discussionID}")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "DELETE" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests/${mrID}/discussions/${discussionID}")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
 }

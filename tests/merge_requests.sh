@@ -1,46 +1,97 @@
 #!/usr/bin/env bash
 
-# TODO: put this in env var output from the set_up_tests CI job
-groupID=53719108
-projectID=36541542
-mrID=13
+# includes
+. ./helpers.sh
+
+mrID=3
 
 test_should_return_merge_requests() {
-    response=$(curl -sS --location --request GET 'http://0.0.0.0:8080/api/v4/groups/'${groupID}'/merge_requests' \
-    --header 'Content-Type: application/json' \
-    --header 'PRIVATE-TOKEN: '${PRIVATE_TOKEN}'')
+    response=$(doRequest "GET" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/merge_requests")
 
-    assert_equals "36541542" "$(echo ${response} | jq -r '.[0].id')"
+    doHave=$(has "${response}" "iid" "${mrID}")
+    assert_equals "${doHave}" true
+}
+
+test_should_disallow_merge_requests_POST_PUT_DELETE() {
+    response=$(doRequest "POST" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/merge_requests")
+
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "PUT" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/merge_requests")
+
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "DELETE" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/merge_requests")
+
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
 }
 
 test_should_return_closes_issues() {
-    response=$(curl -sS --location --request GET 'http://0.0.0.0:8080/api/v4/projects/'${projectID}'/merge_requests/'${mrID}'/closes_issues' \
-    --header 'Content-Type: application/json' \
-    --header 'PRIVATE-TOKEN: '${PRIVATE_TOKEN}'')
+    response=$(doRequest "GET" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests/${mrID}/closes_issues")
 
-    assert_equals "109451069" "$(echo ${response} | jq -r '.[0].id')"
+    assert_equals 1 "$(echo "${response}" | jq length)"
 }
 
 test_should_return_commits() {
-    response=$(curl -sS --location --request GET 'http://0.0.0.0:8080/api/v4/projects/'${projectID}'/merge_requests/'${mrID}'/commits' \
-    --header 'Content-Type: application/json' \
-    --header 'PRIVATE-TOKEN: '${PRIVATE_TOKEN}'')
+    response=$(doRequest "GET" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests/${mrID}/commits")
 
-    assert_equals "5fe70de8936babbcfb10ee36c505356fe207df8a" "$(echo ${response} | jq -r '.[0].id')"
+    assert_equals 1 "$(echo "${response}" | jq length)"
+    assert_equals "8ee68e7a27ccfe18460ab3d78c6fba7ced3b465c" "$(echo "${response}" | jq -r '.[0].id')"
+}
+
+test_should_disallow_groups_merge_requests_commits_POST_PUT_DELETE() {
+    response=$(doRequest "POST" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/merge_requests/${mrID}/commits")
+
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "PUT" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/merge_requests/${mrID}/commits")
+
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "DELETE" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/merge_requests/${mrID}/commits")
+
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
 }
 
 test_should_return_project_merge_request_by_id() {
-    response=$(curl -sS --location --request GET 'http://0.0.0.0:8080/api/v4/projects/'${projectID}'/merge_requests/'${mrID}'' \
-    --header 'Content-Type: application/json' \
-    --header 'PRIVATE-TOKEN: '${PRIVATE_TOKEN}'')
+    response=$(doRequest "GET" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests/${mrID}")
 
-    assert_equals "158333519" "$(echo ${response} | jq -r '.id')"
+    assert_equals "${mrID}" "$(echo "${response}" | jq -r '.iid')"
+}
+
+test_should_disallow_project_merge_requests_byID_POST_PUT_DELETE() {
+    response=$(doRequest "POST" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests/${mrID}")
+
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "PUT" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests/${mrID}")
+
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "DELETE" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests/${mrID}")
+
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
 }
 
 test_should_return_project_merge_requests() {
-    response=$(curl -sS --location --request GET 'http://0.0.0.0:8080/api/v4/projects/'${projectID}'/merge_requests' \
-    --header 'Content-Type: application/json' \
-    --header 'PRIVATE-TOKEN: '${PRIVATE_TOKEN}'')
+    response=$(doRequest "GET" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests")
 
-    assert_equals "158333519" "$(echo ${response} | jq -r '.[0].id')"
+    assert_equals 3 "$(echo "${response}" | jq length)"
+
+    doHave=$(has "${response}" "iid" "${mrID}")
+    assert_equals "${doHave}" true
+}
+
+test_should_disallow_projects_merge_requests_POST_PUT_DELETE() {
+    response=$(doRequest "POST" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests")
+
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "PUT" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests")
+
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "DELETE" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests")
+
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
 }

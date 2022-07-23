@@ -26,6 +26,10 @@ jobs:
           npm install -g nginx-linter
           nginx-linter --include "nginx-proxy/**/*.conf"
 
+      - name: ShellCheck
+        run: |-
+          shellcheck --source-path=./tests ./tests/*
+
   test-proxy-image:
     runs-on: ubuntu-latest
 
@@ -79,6 +83,15 @@ jobs:
             echo '  }'
           } >> /tmp/api_keys.conf
 
+
+          groupID=12045471
+          projectID=38029428
+
+          echo ::set-output name=GROUP_ID::${groupID}
+          echo ::set-output name=PROJECT_ID::${projectID}
+
+          echo ::set-output name=PROXY_BASE_PATH::"http://0.0.0.0:8080/api/v4"
+
       - name: Run gitlab-proxy
         run: |-
           docker run \
@@ -91,6 +104,9 @@ jobs:
       - name: Tests
         env:
           PRIVATE_TOKEN: ${{ steps.set_up_tests.outputs.PRIVATE_TOKEN }}
+          GROUP_ID: ${{ steps.set_up_tests.outputs.GROUP_ID }}
+          PROJECT_ID: ${{ steps.set_up_tests.outputs.PROJECT_ID }}
+          PROXY_BASE_PATH: ${{ steps.set_up_tests.outputs.PROXY_BASE_PATH }}
         run: |-
           bash <(curl -s https://raw.githubusercontent.com/pgrange/bash_unit/master/install.sh)
           ./bash_unit tests/*

@@ -1,12 +1,21 @@
 #!/usr/bin/env bash
 
-# TODO: put this in env var output from the set_up_tests CI job
-projectID=36541542
+# includes
+. ./helpers.sh
 
 test_should_return_tags() {
-    response=$(curl -sS --location --request GET 'http://0.0.0.0:8080/api/v4/projects/'${projectID}'/repository/tags' \
-    --header 'Content-Type: application/json' \
-    --header 'PRIVATE-TOKEN: '${PRIVATE_TOKEN}'')
+    response=$(doRequest "GET" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/repository/tags")
+    assert_equals 1 "$(echo "${response}" | jq length)"
+    assert_equals "0.1.0" "$(echo "${response}" | jq -r '.[0].name')"
+}
 
-    assert_equals 0 "$(echo ${response} | jq length)"
+test_should_disallow_tags_POST_PUT_DELETE() {
+    response=$(doRequest "POST" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/repository/tags")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "PUT" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/repository/tags")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "DELETE" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/repository/tags")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
 }
