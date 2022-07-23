@@ -1,62 +1,109 @@
 #!/usr/bin/env bash
 
-# TODO: put this in env var output from the set_up_tests CI job
-groupID=53719108
+# includes
+. ./helpers.sh
 
 test_should_return_all_members() {
-    response=$(curl -sS --location --request GET 'http://0.0.0.0:8080/api/v4/groups/'${groupID}'/members/all' \
-    --header 'Content-Type: application/json' \
-    --header 'PRIVATE-TOKEN: '${PRIVATE_TOKEN}'')
+    response=$(doRequest "GET" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/members/all")
 
-    assert_equals "2648022" "$(echo ${response} | jq -r '.[].id')"
+    length=$(echo "${response}" | jq length)
+
+    success=false
+    if [ "${length}" -gt 0 ]; then
+        success=true
+    fi
+
+    assert "${success}" || fail 'all groups members should be found'
 }
 
 test_should_return_members() {
-    response=$(curl -sS --location --request GET 'http://0.0.0.0:8080/api/v4/groups/'${groupID}'/members' \
-    --header 'Content-Type: application/json' \
-    --header 'PRIVATE-TOKEN: '${PRIVATE_TOKEN}'')
+    response=$(doRequest "GET" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/members")
 
-    assert_equals "2648022" "$(echo ${response} | jq -r '.[].id')"
+    length=$(echo "${response}" | jq length)
+
+    success=false
+    if [ "${length}" -gt 0 ]; then
+        success=true
+    fi
+
+    assert "${success}" || fail 'groups members should be found'
+}
+
+test_should_disallow_members_POST_PUT_DELETE() {
+    response=$(doRequest "POST" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/members/all")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "PUT" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/members/all")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "DELETE" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/members/all")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
 }
 
 test_should_return_descendant_groups() {
-    response=$(curl -sS --location --request GET 'http://0.0.0.0:8080/api/v4/groups/'${groupID}'/descendant_groups' \
-    --header 'Content-Type: application/json' \
-    --header 'PRIVATE-TOKEN: '${PRIVATE_TOKEN}'')
+    response=$(doRequest "GET" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/descendant_groups")
+    assert_equals 0 "$(echo "${response}" | jq length)"
+}
 
-    assert_equals 0 "$(echo ${response} | jq length)"
+test_should_disallow_descendant_groups_POST_PUT_DELETE() {
+    response=$(doRequest "POST" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/descendant_groups")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "PUT" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/descendant_groups")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "DELETE" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/descendant_groups")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
 }
 
 test_should_return_projects() {
-    response=$(curl -sS --location --request GET 'http://0.0.0.0:8080/api/v4/groups/'${groupID}'/projects' \
-    --header 'Content-Type: application/json' \
-    --header 'PRIVATE-TOKEN: '${PRIVATE_TOKEN}'')
+    response=$(doRequest "GET" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/projects")
 
-    assert_equals 1 "$(echo ${response} | jq length)"
-    assert_equals "36541542" "$(echo ${response} | jq -r '.[0].id')"
+    doHave=$(has "${response}" "name" "GitLab-Proxy-Test")
+    assert_equals "${doHave}" true
 }
 
-test_should_return_projects() {
-    response=$(curl -sS --location --request GET 'http://0.0.0.0:8080/api/v4/groups/'${groupID}'/projects' \
-    --header 'Content-Type: application/json' \
-    --header 'PRIVATE-TOKEN: '${PRIVATE_TOKEN}'')
+test_should_disallow_projects_POST_PUT_DELETE() {
+    response=$(doRequest "POST" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/projects")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
 
-    assert_equals 1 "$(echo ${response} | jq length)"
-    assert_equals "36541542" "$(echo ${response} | jq -r '.[0].id')"
+    response=$(doRequest "PUT" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/projects")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "DELETE" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/projects")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
 }
 
 test_should_return_group() {
-    response=$(curl -sS --location --request GET 'http://0.0.0.0:8080/api/v4/groups/'${groupID}'' \
-    --header 'Content-Type: application/json' \
-    --header 'PRIVATE-TOKEN: '${PRIVATE_TOKEN}'')
+    response=$(doRequest "GET" "${PROXY_BASE_PATH}/groups/${GROUP_ID}")
+    assert_equals "${GROUP_ID}" "$(echo "${response}" | jq -r '.id')"
+}
 
-    assert_equals "${groupID}" "$(echo ${response} | jq -r '.id')"
+test_should_disallow_group_POST_PUT_DELETE() {
+    response=$(doRequest "POST" "${PROXY_BASE_PATH}/groups/${GROUP_ID}")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "PUT" "${PROXY_BASE_PATH}/groups/${GROUP_ID}")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "DELETE" "${PROXY_BASE_PATH}/groups/${GROUP_ID}")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
 }
 
 test_should_return_groups() {
-    response=$(curl -sS --location --request GET 'http://0.0.0.0:8080/api/v4/groups' \
-    --header 'Content-Type: application/json' \
-    --header 'PRIVATE-TOKEN: '${PRIVATE_TOKEN}'')
+    response=$(doRequest "GET" "${PROXY_BASE_PATH}/groups")
 
-    assert_equals "12045471" "$(echo ${response} | jq -r '.[0].id')"
+    doHave=$(has "${response}" "name" "EchoesHQ")
+    assert_equals "${doHave}" true
+}
+
+test_should_disallow_groups_POST_PUT_DELETE() {
+    response=$(doRequest "POST" "${PROXY_BASE_PATH}/groups")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "PUT" "${PROXY_BASE_PATH}/groups")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "DELETE" "${PROXY_BASE_PATH}/groups")
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
 }
