@@ -12,6 +12,12 @@ test_should_return_merge_requests() {
     assert_equals "${doHave}" true
 }
 
+test_should_return_paginated_merge_requests() {
+    response=$(doRequest "GET" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/merge_requests?page=2&per_page=2")
+    assert_equals 2 "$(echo "${response}" | jq length)"
+}
+
+
 test_should_disallow_merge_requests_POST_PUT_DELETE() {
     response=$(doRequest "POST" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/merge_requests")
 
@@ -76,7 +82,7 @@ test_should_disallow_project_merge_requests_byID_POST_PUT_DELETE() {
 test_should_return_project_merge_requests() {
     response=$(doRequest "GET" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests")
 
-    assert_equals 3 "$(echo "${response}" | jq length)"
+    assert_equals 6 "$(echo "${response}" | jq length)"
 
     doHave=$(has "${response}" "iid" "${mrID}")
     assert_equals "${doHave}" true
