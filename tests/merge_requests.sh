@@ -17,7 +17,6 @@ test_should_return_paginated_merge_requests() {
     assert_equals 2 "$(echo "${response}" | jq length)"
 }
 
-
 test_should_disallow_merge_requests_POST_PUT_DELETE() {
     response=$(doRequest "POST" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/merge_requests")
 
@@ -65,12 +64,8 @@ test_should_return_project_merge_request_by_id() {
     assert_equals "${mrID}" "$(echo "${response}" | jq -r '.iid')"
 }
 
-test_should_disallow_project_merge_requests_byID_POST_PUT_DELETE() {
+test_should_disallow_project_merge_requests_byID_POST_DELETE() {
     response=$(doRequest "POST" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests/${mrID}")
-
-    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
-
-    response=$(doRequest "PUT" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests/${mrID}")
 
     assert_equals 404 "$(echo "${response}" | jq -r '.status')"
 
