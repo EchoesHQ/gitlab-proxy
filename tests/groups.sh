@@ -42,7 +42,10 @@ test_should_disallow_members_POST_PUT_DELETE() {
 
 test_should_return_descendant_groups() {
     response=$(doRequest "GET" "${PROXY_BASE_PATH}/groups/${GROUP_ID}/descendant_groups")
-    assert_equals 0 "$(echo "${response}" | jq length)"
+    assert_equals 1 "$(echo "${response}" | jq length)"
+
+    doHave=$(has "${response}" "id" "58527609")
+    assert_equals "${doHave}" true
 }
 
 test_should_disallow_descendant_groups_POST_PUT_DELETE() {
