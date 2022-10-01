@@ -60,8 +60,15 @@ test_should_disallow_groups_merge_requests_commits_POST_PUT_DELETE() {
 
 test_should_return_project_merge_request_by_id() {
     response=$(doRequest "GET" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests/${mrID}")
-
     assert_equals "${mrID}" "$(echo "${response}" | jq -r '.iid')"
+
+    # Test project access via an URL-encoded path
+    response=$(doRequest "GET" "${PROXY_BASE_PATH}/projects/echoes-hq%2Fgitlab-proxy-test/merge_requests/${mrID}")
+    assert_equals "${mrID}" "$(echo "${response}" | jq -r '.iid')"
+
+    # Test project access via a non URL-encoded path returns a 404 (from GitLab)
+    response=$(doRequest "GET" "${PROXY_BASE_PATH}/projects/echoes-hq/gitlab-proxy-test/merge_requests/${mrID}")
+    assert_equals "404 Not Found" "$(echo "${response}" | jq -r '.error')"
 }
 
 test_should_disallow_project_merge_requests_byID_POST_DELETE() {
