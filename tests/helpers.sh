@@ -52,3 +52,15 @@ function doRequest() {
 
     echo "${response}"
 }
+
+
+function doRequestI() {
+    url=$1
+    method=$2
+
+    response=$(curl -I --location --request "${url}" "${method}" \
+    --header 'Content-Type: application/json' \
+    --header 'PRIVATE-TOKEN: '"${PRIVATE_TOKEN}"'' | grep "HTTP/1.1 200 OK")
+
+    echo "${response}"
+}
