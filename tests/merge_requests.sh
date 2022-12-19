@@ -103,3 +103,23 @@ test_should_disallow_projects_merge_requests_POST_PUT_DELETE() {
 
     assert_equals 404 "$(echo "${response}" | jq -r '.status')"
 }
+
+test_should_return_project_merge_requests_resource_label_events() {
+    response=$(doRequest "GET" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests/${mrID}/resource_label_events")
+
+    assert_equals 0 "$(echo "${response}" | jq length)"
+}
+
+test_should_disallow_projects_merge_requests_resource_label_events_POST_PUT_DELETE() {
+    response=$(doRequest "POST" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests/${mrID}/resource_label_events")
+
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "PUT" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests/${mrID}/resource_label_events")
+
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+
+    response=$(doRequest "DELETE" "${PROXY_BASE_PATH}/projects/${PROJECT_ID}/merge_requests/${mrID}/resource_label_events")
+
+    assert_equals 404 "$(echo "${response}" | jq -r '.status')"
+}
