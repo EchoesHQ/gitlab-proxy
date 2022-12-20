@@ -1,5 +1,5 @@
 # Add the proxy's version to the HTTP headers
-add_header X-Echoes-GitLab-Proxy-Version v0.3.0 always;
+add_header X-Echoes-GitLab-Proxy-Version v0.4.0 always;
 
 # Set the global variables from environment
 set $GITLAB_API_URL ${GITLAB_URL};
