@@ -22,6 +22,7 @@ COPY gitlab-api-routes/tags.conf           /etc/nginx/gitlab_api_tags.conf
 COPY gitlab-api-routes/discussions.conf    /etc/nginx/gitlab_api_discussions.conf
 COPY gitlab-api-routes/merge_requests.conf /etc/nginx/gitlab_api_merge_requests.conf
 COPY gitlab-api-routes/namespaces.conf     /etc/nginx/gitlab_api_namespaces.conf
+COPY gitlab-api-routes/personal_access_tokens.conf /etc/nginx/gitlab_api_personal_access_tokens.conf
 COPY gitlab-api-routes/root.conf           /etc/nginx/gitlab_api_root.conf
 
 RUN mkdir /etc/nginx/api_keys
