@@ -16,6 +16,7 @@ COPY gitlab_api.conf                       /etc/nginx/gitlab_api.conf
 COPY gitlab-api-routes/groups.conf         /etc/nginx/gitlab_api_groups.conf
 COPY gitlab-api-routes/groups_hooks.conf   /etc/nginx/gitlab_api_groups_hooks.conf
 COPY gitlab-api-routes/groups_labels.conf  /etc/nginx/gitlab_api_groups_labels.conf
+COPY gitlab-api-routes/projects_hooks.conf /etc/nginx/gitlab_api_projects_hooks.conf
 COPY gitlab-api-routes/projects.conf       /etc/nginx/gitlab_api_projects.conf
 COPY gitlab-api-routes/users.conf          /etc/nginx/gitlab_api_users.conf
 COPY gitlab-api-routes/tags.conf           /etc/nginx/gitlab_api_tags.conf
