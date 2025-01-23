@@ -3,7 +3,7 @@
 # includes
 . ./helpers.sh
 
-name="Test gitlab-proxy "
+name="GitLab proxy tests"
 
 test_should_return_token_description() {
     response=$(doRequest "GET" "${PROXY_BASE_PATH}/personal_access_tokens/self")
